@@ -1,13 +1,13 @@
 import { View, Text } from 'react-native'
-import React from 'react'
+import React, { useState } from 'react'
+import '../../global.css'
+import Tasks from '../../components/tasks'
 
-export default function index() {
+export default function Home() {
+
   return (
-    <View className="">
-      <View>
-        <Text>index</Text>
-      </View>
-  
+    <View className="pt-10 flex flex-col">
+      <Tasks/>
     </View>
   )
 }
