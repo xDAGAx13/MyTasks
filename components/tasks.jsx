@@ -12,12 +12,15 @@ import {
   View,
 } from "react-native";
 import Priority from "./priority";
+import EditTask from "./editTask";
 
 export default function Tasks() {
   const [tasks, setTasks] = useState([]);
   const [addTask, setAddTask] = useState("");
   const [showTasks, setShowTasks] = useState(false);
   const [priority, setPriority] = useState("");
+  const [editIndex, setEditIndex] = useState(null);
+  const [editText, setEditText] = useState("");
 
   useEffect(() => {
     const loadTasks = async () => {
@@ -99,9 +102,11 @@ export default function Tasks() {
     setTasks(updatedTasks);
   };
 
-  const handleEditTask=(index)=>{
-    
-  }
+  const handleEditTask = (index) => {
+  setEditIndex(index);
+  setEditText(tasks[index].text);
+};
+
 
   const handleDeleteTask = (index) => {
     const newTasks = [...tasks];
@@ -109,6 +114,7 @@ export default function Tasks() {
     setTasks(newTasks);
   };
   return (
+    <View >
     <ScrollView className="min-h-screen">
       {/* Current Tasks Title */}
       <View className=" pt-16 flex flex-col">
@@ -156,8 +162,9 @@ export default function Tasks() {
                   }`}
                 >
                   {task.text}
-                  </Text>
-                  <Text className="">Priority:{" "}
+                </Text>
+                <Text className="">
+                  Priority:{" "}
                   <FontAwesome
                     name="circle"
                     size={16}
@@ -188,11 +195,24 @@ export default function Tasks() {
                 <TouchableOpacity onPress={() => handleDeleteTask(index)}>
                   <Ionicons name="trash-outline" color="black" size={30} />
                 </TouchableOpacity>
-                
               </View>
             </View>
           ))}
       </View>
+      
     </ScrollView>
+    {editIndex!==null&&<EditTask
+  editIndex={editIndex}
+  editText={editText}
+  setEditText={setEditText}
+  setEditIndex={setEditIndex}
+  tasks={tasks}
+  setTasks={setTasks}
+/>
+}
+    </View>
+    
+    
+    
   );
 }
