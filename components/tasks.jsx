@@ -4,11 +4,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
 import { ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import * as Notifications from 'expo-notifications'
+import Priority from "./priority";
 
 export default function Tasks() {
   const [tasks, setTasks] = useState([]);
   const [addTask, setAddTask] = useState("");
   const [showTasks, setShowTasks] = useState(false);
+  const [priority, setPriority] = useState('');
   
 
   useEffect(()=>{
@@ -57,7 +59,7 @@ export default function Tasks() {
     }
 
     const notificationId = await scheduleNotification(addTask.trim());
-    const newTask = {text: addTask.trim(), checked:false, notificationId};
+    const newTask = {text: addTask.trim(), checked:false, priority:'',notificationId};
     setTasks([...tasks, newTask]);
     setAddTask("");
 
@@ -95,7 +97,8 @@ export default function Tasks() {
         <Text className="text-white ml-10 text-4xl font-semibold">
           Add a Task
         </Text>
-        <View className="flex-row items-center gap-2 mt-2 mx-4 h-auto">
+        <View className="flex-col gap-2 mt-2 mx-4 h-auto">
+          <View className="flex-row items-center gap-2">
           <TextInput
             value={addTask}
             onChangeText={setAddTask}
@@ -106,7 +109,10 @@ export default function Tasks() {
           <TouchableOpacity onPress={handleAddTask} className="text-white">
             <FontAwesome6 name="plus" size={30} color="white" />
           </TouchableOpacity>
+          </View>
+          {addTask&&<Priority/>}
         </View>
+        
         <TouchableOpacity
           onPress={() =>
             showTasks === false ? setShowTasks(true) : setShowTasks(false)
