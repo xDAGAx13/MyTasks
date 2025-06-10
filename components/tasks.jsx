@@ -39,34 +39,46 @@ export default function Tasks() {
   const scheduleNotification = async (taskText)=>{
 
     const triggerTime = new Date(Date.now()+10*1000)
-    await Notifications.scheduleNotificationAsync({
+    const id = await Notifications.scheduleNotificationAsync({
       content:{
         title:'Task Reminder',
         body: `Time to complete: ${taskText}`,
       },
-      trigger:{
-        seconds:triggerTime,
-      }
+      trigger:triggerTime
     })
+
+    return id;
   }
 
-  const handleAddTask = () => {
+  const handleAddTask = async () => {
     if (addTask.trim() === "") {
       alert("Cannot add empty task");
       return;
     }
-    const newTask = {text: addTask.trim(), checked:false};
+
+    const notificationId = await scheduleNotification(addTask.trim());
+    const newTask = {text: addTask.trim(), checked:false, notificationId};
     setTasks([...tasks, newTask]);
     setAddTask("");
 
-    scheduleNotification(newTask.text)
   };
 
-  const handleUpdateCheckedTasks = (index) => {
+  const handleUpdateCheckedTasks = async (index) => {
     const updatedTasks = [...tasks];
     let state = updatedTasks[index].checked;
     state ? (state = false) : (state = true);
     updatedTasks[index].checked = state;
+
+    const currentTask = updatedTasks[index];
+
+    if(currentTask.checked&&currentTask.notificationId){
+      try{
+        await Notifications.cancelScheduledNotificationAsync(currentTask.notificationId);
+        currentTask.notificationId=null;
+      }catch(e){
+        console.error('Failed to cancel notification: ',e)
+      }
+    }
     setTasks(updatedTasks);
   };
 
@@ -77,21 +89,22 @@ export default function Tasks() {
     setTasks(newTasks);
   }
   return (
-    <ScrollView>
+    <ScrollView className="min-h-screen" >
       {/* Current Tasks Title */}
-      <View className="pt-16 flex flex-col">
+      <View className=" pt-16 flex flex-col">
         <Text className="text-white ml-10 text-4xl font-semibold">
           Add a Task
         </Text>
-        <View className="flex-row items-center gap-2 mt-2 mx-4">
+        <View className="flex-row items-center gap-2 mt-2 mx-4 h-auto">
           <TextInput
             value={addTask}
             onChangeText={setAddTask}
-            className="bg-white px-4 py-2 text-lg rounded-2xl flex-1 placeholder:text-gray-400"
+            className="bg-white px-4 py-2 text-xl rounded-2xl flex-1 placeholder:text-gray-400 h-16 items-center justify-center border-4 border-black"
             placeholder="Add a Task"
+            
           />
           <TouchableOpacity onPress={handleAddTask} className="text-white">
-            <FontAwesome6 name="plus" size={24} color="white" />
+            <FontAwesome6 name="plus" size={30} color="white" />
           </TouchableOpacity>
         </View>
         <TouchableOpacity
@@ -109,15 +122,15 @@ export default function Tasks() {
           tasks.map((task, index) => (
             <View
               key={index}
-              className="flex-row mb-2 p-3 bg-white rounded-xl justify-between"
+              className="flex-row mb-2 p-3 bg-white rounded-xl justify-between h-16 items-center border-4 border-gray-800"
             >
-              <Text className={`text-black text-xl ${task.checked&&'line-through decoration-4'}`}>{task.text}</Text>
-              <View className="flex-row gap-2">
+              <Text className={`text-black text-xl font-semibold ${task.checked&&'line-through decoration-4'}`}>{task.text}</Text>
+              <View className="flex-row gap-2 ">
               <TouchableOpacity onPress={()=>handleUpdateCheckedTasks(index)}>
-                <Ionicons name={task.checked?"checkbox":'checkbox-outline'} color="black" size={24} />
+                <Ionicons name={task.checked?"checkbox":'checkbox-outline'} color={task.checked?"green":'black'} size={30} />
               </TouchableOpacity>
               <TouchableOpacity onPress={()=>handleDeleteTask(index)}>
-                <Ionicons name='trash-outline' color="black" size={24} />
+                <Ionicons name='trash-outline' color="black" size={30} />
               </TouchableOpacity>
               </View>
             </View>
